@@ -34,6 +34,8 @@ GameState game;
 
 void setup();
 void update();
+void moveSand(const int i);
+void moveWater(const int i, const ParticleType type);
 void render();
 void drawDebugUI();
 
@@ -96,31 +98,11 @@ void update()
         for (int i = TOTAL_NUM_PARTICLES - 1; i >= 0; i--) {
             switch (grid[i].type) {
             case ParticleType::SAND: {
-                int iBelow = i + NUM_PARTICLES_IN_ROW;
-
-                if (iBelow >= TOTAL_NUM_PARTICLES) continue;
-
-                if (grid[iBelow].type != ParticleType::SAND) {
-                    grid[iBelow].type = ParticleType::SAND;
-                    grid[i].type = ParticleType::NONE;
-                }
-
+                moveSand(i);
             } break;
 
             case ParticleType::WATER: {
-                int iBelow{i + NUM_PARTICLES_IN_ROW};
-                int iLeft{i - 1};
-                int iRight{i + 1};
-                int idx{iBelow};
-
-                if (iBelow >= TOTAL_NUM_PARTICLES || iRight >= TOTAL_NUM_PARTICLES || iLeft < 0) continue;
-
-                if (grid[idx].type != ParticleType::NONE) idx = iLeft;
-                if (grid[idx].type != ParticleType::NONE) idx = iRight;
-                if (grid[idx].type != ParticleType::NONE) continue;
-
-                grid[idx].type = ParticleType::WATER;
-                grid[i].type = ParticleType::NONE;
+                moveWater(i, ParticleType::NONE);
             } break;
 
             default: {
@@ -130,10 +112,47 @@ void update()
     }
 }
 
+void moveWater(const int i, const ParticleType type)
+{
+    int iBelow{i + NUM_PARTICLES_IN_ROW};
+    int iLeft{i - 1};
+    int iRight{i + 1};
+    int idx{iBelow};
+
+    if (iBelow >= TOTAL_NUM_PARTICLES || iRight >= TOTAL_NUM_PARTICLES || iLeft < 0) return;
+
+    if (grid[idx].type != ParticleType::NONE) idx = iLeft;
+    if (grid[idx].type != ParticleType::NONE) idx = iRight;
+    if (grid[idx].type != ParticleType::NONE) return;
+
+    grid[idx].type = ParticleType::WATER;
+    grid[i].type = type;
+}
+
+void moveSand(const int i)
+{
+    int iBelow = i + NUM_PARTICLES_IN_ROW;
+
+    if (iBelow >= TOTAL_NUM_PARTICLES) return;
+
+    if (grid[iBelow].type == ParticleType::WATER) {
+        moveWater(iBelow, ParticleType::SAND);
+        // continue;
+    }
+
+    if (grid[iBelow].type != ParticleType::SAND) {
+        grid[iBelow].type = ParticleType::SAND;
+        grid[i].type = ParticleType::NONE;
+    }
+}
+
 void render()
 {
     BeginDrawing();
     ClearBackground(LIGHTGRAY);
+
+    int waters{};
+    int sands{};
 
     for (Particle p : grid) {
         if (p.type != NONE) {
@@ -141,10 +160,12 @@ void render()
             switch (p.type) {
             case ParticleType::SAND: {
                 colour = BEIGE;
+                sands++;
             } break;
 
             case ParticleType::WATER: {
                 colour = BLUE;
+                waters++;
             } break;
 
             default: {
@@ -152,15 +173,17 @@ void render()
             }
 
             DrawRectangleV(p.px, p.size, colour);
-            // DrawRectangleLinesEx({p.px.x, p.px.y, p.size.x, p.size.y}, 1, BROWN);
         }
-
-        // std::ostringstream txtss;
-        // txtss << i;
-        // DrawText(txtss.str().c_str(), grid[i].px.x, grid[i].px.y, 20, BLACK);
     }
 
-    drawDebugUI();
+    // Debug
+    {
+        std::ostringstream txtss;
+        txtss << "waters:" << waters << " sands:" << sands;
+        DrawText(txtss.str().c_str(), 10, 10, 20, BLACK);
+    }
+
+    // drawDebugUI();
 
     EndDrawing();
 }
