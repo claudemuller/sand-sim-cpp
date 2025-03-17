@@ -7,7 +7,7 @@
 #define MAX_SCREEN_HEIGHT 768
 
 #define PARTICLE_SIZE 3.0f
-#define GRAVITY 0.01f
+#define GRAVITY 0.006f
 
 const int NUM_PARTICLES_IN_ROW = MAX_SCREEN_WIDTH / PARTICLE_SIZE;
 const int NUM_PARTICLES_IN_COL = MAX_SCREEN_HEIGHT / PARTICLE_SIZE;
@@ -121,8 +121,11 @@ void moveWater(const int i, const ParticleType type)
 
     if (iBelow >= TOTAL_NUM_PARTICLES || iRight >= TOTAL_NUM_PARTICLES || iLeft < 0) return;
 
+    // If there is something below this cell check left
     if (grid[idx].type != ParticleType::NONE) idx = iLeft;
+    // If there is something to the left of this cell check right
     if (grid[idx].type != ParticleType::NONE) idx = iRight;
+    // If there is something to the right of this cell don't move
     if (grid[idx].type != ParticleType::NONE) return;
 
     grid[idx].type = ParticleType::WATER;
@@ -132,16 +135,26 @@ void moveWater(const int i, const ParticleType type)
 void moveSand(const int i)
 {
     int iBelow = i + NUM_PARTICLES_IN_ROW;
+    int iLeft{iBelow - 1};
+    int iRight{iBelow + 1};
+    int idx{iBelow};
 
-    if (iBelow >= TOTAL_NUM_PARTICLES) return;
+    if (iBelow >= TOTAL_NUM_PARTICLES || iRight >= TOTAL_NUM_PARTICLES || iLeft < 0) return;
 
-    if (grid[iBelow].type == ParticleType::WATER) {
-        moveWater(iBelow, ParticleType::SAND);
-        // continue;
+    // If there is something below this cell check below left
+    if (grid[idx].type != ParticleType::NONE) idx = iLeft;
+    // If there is something to the below left of this cell check below right
+    if (grid[idx].type != ParticleType::NONE) idx = iRight;
+    // If there is something to the below right of this cell don't move
+    // if (grid[idx].type != ParticleType::NONE) return;
+
+    if (grid[idx].type == ParticleType::WATER) {
+        moveWater(idx, ParticleType::SAND);
+        // return;
     }
 
-    if (grid[iBelow].type != ParticleType::SAND) {
-        grid[iBelow].type = ParticleType::SAND;
+    if (grid[idx].type == ParticleType::NONE) {
+        grid[idx].type = ParticleType::SAND;
         grid[i].type = ParticleType::NONE;
     }
 }
