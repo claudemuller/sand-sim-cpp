@@ -13,21 +13,21 @@ const int NUM_PARTICLES_IN_ROW = MAX_SCREEN_WIDTH / PARTICLE_SIZE;
 const int NUM_PARTICLES_IN_COL = MAX_SCREEN_HEIGHT / PARTICLE_SIZE;
 const int TOTAL_NUM_PARTICLES = NUM_PARTICLES_IN_ROW * NUM_PARTICLES_IN_COL;
 
-typedef enum {
+enum ParticleType {
     NONE,
     SAND,
     WATER,
-} ParticleType;
+};
 
-typedef struct {
+struct Particle {
     Vector2 px;
     Vector2 size;
     ParticleType type;
-} Particle;
+};
 
-typedef struct {
+struct GameState {
     Input input;
-} GameState;
+};
 
 Particle grid[(int)TOTAL_NUM_PARTICLES];
 GameState game;

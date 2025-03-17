@@ -4,15 +4,15 @@
 #include <bitset>
 #include <raylib.h>
 
-typedef struct {
-	Vector2 px;
-	std::bitset<8> btns;
-} Mouse;
+struct Mouse {
+    Vector2 px;
+    std::bitset<8> btns;
+};
 
-typedef struct {
-	Mouse mouse;
-} Input;
+struct Input {
+    Mouse mouse;
+};
 
-void processInput(Input& input);
+void processInput(Input &input);
 
 #endif // !INPUT_HPP
